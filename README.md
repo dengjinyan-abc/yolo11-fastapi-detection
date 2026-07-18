@@ -10,6 +10,10 @@
 - 自动生成唯一文件名，避免多次检测互相覆盖
 - 显示检测结果图、目标数量、检测耗时和置信度
 - 支持电脑本机访问，也支持同一局域网内手机访问
+<img width="1051" height="1170" alt="image" src="https://github.com/user-attachments/assets/7497b7c6-0ca0-4b82-b6ec-7a532909a1aa" />
+<img width="1125" height="559" alt="image" src="https://github.com/user-attachments/assets/c19b0361-bb86-4205-89cd-a43b9fe0101e" />
+
+
 
 ## 项目结构
 
