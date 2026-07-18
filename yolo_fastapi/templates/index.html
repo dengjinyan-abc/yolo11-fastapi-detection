@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YOLO11 目标检测系统</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Arial, "Microsoft YaHei", sans-serif;
+            background: #f4f6f8;
+            color: #1f2933;
+        }
+
+        main {
+            width: min(920px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 40px 0;
+        }
+
+        .panel {
+            background: #ffffff;
+            border: 1px solid #d9e2ec;
+            border-radius: 8px;
+            padding: 28px;
+        }
+
+        h1 {
+            margin: 0 0 8px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            margin: 0 0 24px;
+            color: #62748e;
+        }
+
+        .upload-form {
+            display: grid;
+            gap: 16px;
+            align-items: start;
+        }
+
+        .file-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+        }
+
+        input[type="file"] {
+            max-width: 100%;
+        }
+
+        button {
+            width: fit-content;
+            border: 0;
+            border-radius: 6px;
+            background: #1769e0;
+            color: #ffffff;
+            padding: 10px 22px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #0f55bd;
+        }
+
+        button:disabled {
+            cursor: wait;
+            background: #8aaee5;
+        }
+
+        .message {
+            margin: 18px 0 0;
+            padding: 12px 14px;
+            border-radius: 6px;
+            background: #fff4e5;
+            color: #8a4b00;
+            text-align: left;
+        }
+
+        .result {
+            margin-top: 28px;
+            display: grid;
+            gap: 20px;
+        }
+
+        .result img,
+        #preview {
+            width: 100%;
+            max-height: 640px;
+            object-fit: contain;
+            border: 1px solid #d9e2ec;
+            border-radius: 8px;
+            background: #f8fafc;
+        }
+
+        #preview {
+            display: none;
+            margin-top: 18px;
+        }
+
+        .meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            color: #52606d;
+        }
+
+        .badge {
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: #edf2f7;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            overflow: hidden;
+            border: 1px solid #d9e2ec;
+            border-radius: 8px;
+        }
+
+        th,
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #d9e2ec;
+            text-align: left;
+        }
+
+        th {
+            background: #f8fafc;
+        }
+
+        tr:last-child td {
+            border-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <section class="panel">
+            <h1>YOLO11 目标检测系统</h1>
+            <p class="subtitle">上传图片后，系统会自动识别目标并返回带检测框的结果图。</p>
+
+            <form class="upload-form" action="/detect" method="post" enctype="multipart/form-data">
+                <div class="file-row">
+                    <input id="fileInput" type="file" name="file" accept="image/*" required>
+                    <button id="submitBtn" type="submit">开始检测</button>
+                </div>
+                <img id="preview" alt="上传图片预览">
+            </form>
+
+            {% if error %}
+            <p class="message">{{ error }}</p>
+            {% endif %}
+
+            {% if result_image %}
+            <section class="result">
+                <div>
+                    <h2>检测结果</h2>
+                    <div class="meta">
+                        <span class="badge">文件：{{ original_name }}</span>
+                        <span class="badge">目标数量：{{ detection_count }}</span>
+                        <span class="badge">耗时：{{ elapsed_ms }} ms</span>
+                    </div>
+                </div>
+
+                <img src="/{{ result_image }}" alt="检测结果图">
+
+                {% if detections %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>类别</th>
+                            <th>置信度</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in detections %}
+                        <tr>
+                            <td>{{ item.label }}</td>
+                            <td>{{ item.confidence }}%</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="message">未检测到目标。</p>
+                {% endif %}
+            </section>
+            {% endif %}
+        </section>
+    </main>
+
+    <script>
+        const form = document.querySelector(".upload-form");
+        const input = document.querySelector("#fileInput");
+        const preview = document.querySelector("#preview");
+        const submitBtn = document.querySelector("#submitBtn");
+
+        input.addEventListener("change", () => {
+            const file = input.files[0];
+            if (!file) {
+                preview.style.display = "none";
+                preview.removeAttribute("src");
+                return;
+            }
+
+            preview.src = URL.createObjectURL(file);
+            preview.style.display = "block";
+        });
+
+        form.addEventListener("submit", () => {
+            submitBtn.disabled = true;
+            submitBtn.textContent = "检测中...";
+        });
+    </script>
+</body>
+</html>
